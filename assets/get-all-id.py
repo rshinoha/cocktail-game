@@ -23,9 +23,10 @@ NUM_NON_NULL_READ = 5
 WAIT_BETWEEN_NULLS = 5
 # Minimum number of seconds the script sleeps after a non-null drinks
 # object is found
-MIN_SEC = 10
-# Minimum number of minutes the script sleeps after 
-MIN_MIN = 5
+MIN_SEC = 15
+# Minimum number of minutes the script sleeps after NUM_NULL_READ
+# number of IDs read
+MIN_MIN = 1
 # Hour of day where we stop script (in military time)
 END_TIME = 21
 # Randrange stopping criteria to add on to sleep time
@@ -38,7 +39,7 @@ ALL_ID_FILE = 'all-id-list.csv'
 CALL_URL = "https://www.thecocktaildb.com/api/json/v1/1/lookup.php?i={}"
 
 # Current id
-cur_id = ''
+cur_id = None
 # Temporary list of IDs to add to ALL_ID_FILE during extended break
 id_list = []
 # Counter for checking number of consecutive null drinks object
@@ -46,35 +47,45 @@ null_count = 0
 # Counter for checking number of non-null drinks object IDs read
 # before extended break
 count = 0
-# Current hour of the day
-cur_hour = datetime.now().hour
 
 # Opens last-id.txt to find last id checked by script
 # If empty, assumes that we need to start on 11000
 with open(LAST_ID_FILE, 'r') as reader:
     temp_str = reader.read()
     if temp_str == '':
-        cur_id = FIRST_ID
+        cur_id = int(FIRST_ID)
     else:
-        cur_id = temp_str
+        cur_id = int(temp_str)
 
 # Loop stops if one of these conditions are fulfilled:
 # * When the number of consecutive drinks object with drinks set as
 # null exceeds MAX_NULL_COUNT
 # * When current hour exceeds END_TIME
-while null_count < MAX_NULL_COUNT and cur_hour < END_TIME:
+while null_count < MAX_NULL_COUNT and datetime.now().hour < END_TIME:
+    cur_id += 1
     # Saves response received from API request
     response = requests.get(CALL_URL.format(cur_id))
-    print(datetime.now())
     if response.json()['drinks'] is None:
         null_count += 1
         sleep(WAIT_BETWEEN_NULLS + randrange(RAND_STOP))
     else:
+        null_count = 0
         count += 1
         id_list.append(response.json()['drinks'][0]['idDrink'])
         sleep(MIN_SEC + randrange(RAND_STOP))
+    if count >= NUM_NON_NULL_READ:
         print(id_list)
-    print(datetime.now())
+        for id in id_list:
+            with open(ALL_ID_FILE, 'a') as writer:
+                writer.write('\n{}'.format(id))
+        id_list.clear()
+        break
+        # sleep_min = MIN_MIN + randrange(RAND_STOP)
+        # print("Sleeping for approximately {} minutes...".format(sleep_min))
+        # sleep(sleep_min * 60 + randrange(RAND_STOP))
 
-    break
+with open(LAST_ID_FILE, 'w') as writer:
+    writer.write(str(cur_id))
 
+print("Script stopped at {} on id #{}".format(datetime.now(), cur_id))
+print("Consecutive null counts = {}".format(null_count))
