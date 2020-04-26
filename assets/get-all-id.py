@@ -31,6 +31,10 @@ MIN_MIN = 5
 END_TIME = 21
 # Randrange stopping criteria to add on to sleep time
 RAND_STOP = 11
+# Maximum number of connection tiemouts allowed
+TIMEOUT = 5
+# Seconds of connection time allowed
+LEN_REQUEST = 3
 # File that contains last ID checked
 LAST_ID_FILE = 'last-id.txt'
 # File containing all IDs
@@ -47,6 +51,8 @@ null_count = 0
 # Counter for checking number of non-null drinks object IDs read
 # before extended break
 count = 0
+# Number of consecutive timeouts
+timeout = 0
 
 # Opens last-id.txt to find last id checked by script
 # If empty, assumes that we need to start on 11000
@@ -63,28 +69,35 @@ print("Starting script at id #{}".format(cur_id + 1))
 # * When the number of consecutive drinks object with drinks set as
 # null exceeds MAX_NULL_COUNT
 # * When current hour exceeds END_TIME
-while null_count < MAX_NULL_COUNT and datetime.now().hour < END_TIME:
-    cur_id += 1
-    # Saves response received from API request
-    response = requests.get(CALL_URL.format(cur_id))
-    if response.json()['drinks'] is None:
-        null_count += 1
-        sleep(WAIT_BETWEEN_NULLS + randrange(RAND_STOP))
-    else:
-        null_count = 0
-        count += 1
-        id_list.append(response.json()['drinks'][0]['idDrink'])
-        sleep(MIN_SEC + randrange(RAND_STOP))
-    if count >= NUM_NON_NULL_READ:
-        count = 0
-        print("IDs read: {}".format(id_list))
-        for id in id_list:
-            with open(ALL_ID_FILE, 'a') as writer:
-                writer.write('\n{}'.format(id))
-        id_list.clear()
-        sleep_min = MIN_MIN + randrange(RAND_STOP)
-        print("Sleeping for approximately {} minutes...".format(sleep_min))
-        sleep(sleep_min * 60 + randrange(RAND_STOP))
+while null_count < MAX_NULL_COUNT and datetime.now().hour < END_TIME and timeout < TIMEOUT:
+    try:
+        timeout = 0
+        cur_id += 1
+        # Saves response received from API request
+        response = requests.get(CALL_URL.format(cur_id), timeout=LEN_REQUEST)
+        if response.json()['drinks'] is None:
+            null_count += 1
+            sleep(WAIT_BETWEEN_NULLS + randrange(RAND_STOP))
+        else:
+            null_count = 0
+            count += 1
+            id_list.append(response.json()['drinks'][0]['idDrink'])
+            sleep(MIN_SEC + randrange(RAND_STOP))
+        if count >= NUM_NON_NULL_READ:
+            count = 0
+            print("IDs read: {}".format(id_list))
+            for id in id_list:
+                with open(ALL_ID_FILE, 'a') as writer:
+                    writer.write('\n{}'.format(id))
+            id_list.clear()
+            sleep_min = MIN_MIN + randrange(RAND_STOP)
+            print("Sleeping for approximately {} minutes...".format(sleep_min))
+            sleep(sleep_min * 60 + randrange(RAND_STOP))
+            print("Starting again")
+    except:
+        timeout += 1
+        print("Connection timed out")
+        cur_id -= 1
 
 print("IDs read: {}".format(id_list))
 for id in id_list:
