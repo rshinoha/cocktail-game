@@ -15,7 +15,7 @@ import requests
 FIRST_ID = '11000'
 # Script stops after MAX_NULL_COUNT under the assumption that there
 # are no more drinks in the database
-MAX_NULL_COUNT = 5
+MAX_NULL_COUNT = 30
 # Number of non-null objects the script reads before extended break
 NUM_NON_NULL_READ = 5
 # Minimum number of Seconds the script sleeps in between calls where
@@ -24,9 +24,9 @@ WAIT_BETWEEN_NULLS = 5
 # Minimum number of seconds the script sleeps after a non-null drinks
 # object is found
 MIN_SEC = 15
-# Minimum number of minutes the script sleeps after NUM_NULL_READ
+# Minimum number of minutes the script sleeps after NUM_NON_NULL_READ
 # number of IDs read
-MIN_MIN = 1
+MIN_MIN = 5
 # Hour of day where we stop script (in military time)
 END_TIME = 21
 # Randrange stopping criteria to add on to sleep time
@@ -57,6 +57,8 @@ with open(LAST_ID_FILE, 'r') as reader:
     else:
         cur_id = int(temp_str)
 
+print("Starting script at id #{}".format(cur_id + 1))
+
 # Loop stops if one of these conditions are fulfilled:
 # * When the number of consecutive drinks object with drinks set as
 # null exceeds MAX_NULL_COUNT
@@ -74,15 +76,20 @@ while null_count < MAX_NULL_COUNT and datetime.now().hour < END_TIME:
         id_list.append(response.json()['drinks'][0]['idDrink'])
         sleep(MIN_SEC + randrange(RAND_STOP))
     if count >= NUM_NON_NULL_READ:
-        print(id_list)
+        count = 0
+        print("IDs read: {}".format(id_list))
         for id in id_list:
             with open(ALL_ID_FILE, 'a') as writer:
                 writer.write('\n{}'.format(id))
         id_list.clear()
-        break
-        # sleep_min = MIN_MIN + randrange(RAND_STOP)
-        # print("Sleeping for approximately {} minutes...".format(sleep_min))
-        # sleep(sleep_min * 60 + randrange(RAND_STOP))
+        sleep_min = MIN_MIN + randrange(RAND_STOP)
+        print("Sleeping for approximately {} minutes...".format(sleep_min))
+        sleep(sleep_min * 60 + randrange(RAND_STOP))
+
+print("IDs read: {}".format(id_list))
+for id in id_list:
+    with open(ALL_ID_FILE, 'a') as writer:
+        writer.write('\n{}'.format(id))
 
 with open(LAST_ID_FILE, 'w') as writer:
     writer.write(str(cur_id))
