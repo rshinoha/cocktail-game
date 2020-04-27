@@ -60,7 +60,19 @@ const questions = [
 ];
 
 function buildQuiz() {
+    const output = [];
 
+    questions.array.forEach(
+        (currentQuestion, questionNumber) => {
+            const answers = [];
+
+            for(choice in currentQuestion.answers){
+                // adds checkboxes
+                answers.push(
+                    `<input class="form-check-input" type="checkbox" value="" name`
+                )
+            }
+    });
 }
 
 function showResults() {

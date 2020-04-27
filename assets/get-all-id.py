@@ -15,7 +15,7 @@ import requests
 FIRST_ID = '11000'
 # Script stops after MAX_NULL_COUNT under the assumption that there
 # are no more drinks in the database
-MAX_NULL_COUNT = 30
+MAX_NULL_COUNT = 50
 # Number of non-null objects the script reads before extended break
 NUM_NON_NULL_READ = 5
 # Minimum number of Seconds the script sleeps in between calls where
@@ -23,10 +23,10 @@ NUM_NON_NULL_READ = 5
 WAIT_BETWEEN_NULLS = 5
 # Minimum number of seconds the script sleeps after a non-null drinks
 # object is found
-MIN_SEC = 15
+MIN_SEC = 10
 # Minimum number of minutes the script sleeps after NUM_NON_NULL_READ
 # number of IDs read
-MIN_MIN = 5
+MIN_MIN = 0
 # Hour of day where we stop script (in military time)
 END_TIME = 21
 # Randrange stopping criteria to add on to sleep time
