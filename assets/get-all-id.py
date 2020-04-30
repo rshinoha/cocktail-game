@@ -32,7 +32,7 @@ END_TIME = 21
 # Randrange stopping criteria to add on to sleep time
 RAND_STOP = 11
 # Maximum number of connection tiemouts allowed
-TIMEOUT = 5
+TIMEOUT = 10
 # Seconds of connection time allowed
 LEN_REQUEST = 3
 # File that contains last ID checked
@@ -71,10 +71,10 @@ print("Starting script at id #{}".format(cur_id + 1))
 # * When current hour exceeds END_TIME
 while null_count < MAX_NULL_COUNT and datetime.now().hour < END_TIME and timeout < TIMEOUT:
     try:
-        timeout = 0
         cur_id += 1
         # Saves response received from API request
         response = requests.get(CALL_URL.format(cur_id), timeout=LEN_REQUEST)
+        timeout = 0
         if response.json()['drinks'] is None:
             null_count += 1
             sleep(WAIT_BETWEEN_NULLS + randrange(RAND_STOP))
