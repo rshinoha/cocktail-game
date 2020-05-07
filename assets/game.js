@@ -1,9 +1,37 @@
-const quizContainer = document.querySelector('quiz');
-const resultsContainer = document.querySelector('results');
-const submitButton = document.querySelector('submit');
-const nextCocktainButton = document.querySelector('next');
+function buildQuiz() {
+    const output = [];
 
+    questions.forEach(
+        (currentQuestion, questionNumber) => {
+            const answers = [];
+
+            for(choice in currentQuestion.answers){
+                // adds checkboxes
+                answers.push(
+                    `<div class="form-check col-6">\n\t<input class="form-check-input" type="checkbox" name="option${questionNumber}" id="check${questionNumber}" value="">\n\t<label class="form-check-label" for="check${questionNumber}">\n\t${currentQuestion.answers[choice]}\n\t</label>\n</div>\n`
+                );
+            }
+
+            output.push(
+                `<div class="question col-12 p-0"><h2>${currentQuestion.question}</h2></div>\n${answers.join('')}`
+            );
+    });
+
+    console.log(output.join(''))
+
+    quizContainer.innerHTML = output.join('');
+}
+
+// function showResults() {
+
+// }
+
+const quizContainer = document.querySelector('#quiz');
+// const resultsContainer = document.querySelector('results');
+// const submitButton = document.querySelector('submit');
+// const nextCocktainButton = document.querySelector('next');
 // Temporary alcohol and ingredients objects for initial setup
+
 let alcohol = {
     0: "Blended whisky",
     1: "Vodka",
@@ -42,7 +70,7 @@ const questions = [
             4: alcohol[4],
             5: alcohol[5]
         },
-        correctAnswers: drink[alcoholIDList]
+        correctAnswers: drink["alcoholIDList"]
     },
     {
         question: "Other ingredients",
@@ -54,31 +82,17 @@ const questions = [
             4: other[4],
             5: other[5]
         },
-        correctAnswers: drink[otherIDList]
+        correctAnswers: drink["otherIDList"]
     }
 
 ];
 
-function buildQuiz() {
-    const output = [];
-
-    questions.array.forEach(
-        (currentQuestion, questionNumber) => {
-            const answers = [];
-
-            for(choice in currentQuestion.answers){
-                // adds checkboxes
-                answers.push(
-                    `<input class="form-check-input" type="checkbox" value="" name`
-                )
-            }
-    });
+if(quizContainer){
+    console.log("ok");
 }
-
-function showResults() {
-
+else{
+    console.log("issue");
 }
-
 buildQuiz();
 
-submitButton.addEventListener('click', showResults);
+// submitButton.addEventListener('click', showResults);
